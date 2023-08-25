@@ -2,7 +2,7 @@
 
 sleep 30
 
-sudo apt-get install updates
+sudo apt-get install updates -y
 
 
 

@@ -7,6 +7,11 @@ packer {
   }
 }
 
+locals {
+    timestamp = regex_replace(timestamp(), "[- TZ:]", "")
+    image_name = "${var.image_prefix}-ubuntu-${local.timestamp}"
+}
+
 source "azure-arm" "ubuntu"{
     os_type                    = "Linux"
     build_resource_group_name  = "RitterTest_group"
@@ -19,7 +24,7 @@ source "azure-arm" "ubuntu"{
     image_version   = "latest"
     
     # Destination image
-    managed_image_name                 = "RitterWork_UbuntuServer"
+    managed_image_name                 = local.image_name
     managed_image_resource_group_name  = "RitterTest_group"
     
     shared_image_gallery_destination {
@@ -27,7 +32,7 @@ source "azure-arm" "ubuntu"{
     resource_group  = "RitterTest_group"
     gallery_name    = "Ritter_Images"
     image_name      = "UbuntuServer_16.04.0-LTS_Ritter"
-    image_version   = "1.0.0"
+    image_version   = formatdate("YYYY.MMDD.hhMM",timestamp())
     }
    
 
@@ -48,8 +53,13 @@ build{
     sources = ["source.azure-arm.ubuntu"]
 
 
+    provisioner "shell"{
+        
+        #installs Docker, Kuberenetes, and Dynatrace 
+        #script = "./script.sh"
+    
 
-    provisioner "shell" {
+        #Deprovisions the server
         execute_command = "chmod +x {{ .Path }}; {{ .Vars }} sudo -E sh '{{ .Path }}'"
         
         inline = [
